@@ -21,7 +21,7 @@ def get_speakers(url):
 def seconds_to_hourformat(seconds):
     hours = int(seconds / 3600)
     minutes = int(seconds % 3600 / 60)
-    return f"{hours}:{minutes}"
+    return f"{hours:02d}:{minutes:02d}"
 
 
 def name2slug(text):
@@ -69,9 +69,9 @@ start.text = dates[0]['date']
 end =  ET.SubElement(conference, 'end')
 end.text = dates[-1]['date']
 days = ET.SubElement(conference, 'days')
-days.text = len(dates)
+days.text = f"{len(dates)}"
 day_change = ET.SubElement(conference, 'day_change')
-day_change.text = dates[0]["start"].strftime('00:00:00:')  # FIXME using midnight for now
+day_change.text = dates[0]["start"].strftime('00:00:00')  # FIXME using midnight for now
 timeslot_duration = ET.SubElement(conference, 'timeslot_duration')
 timeslot_duration.text = "00:05:00"
 base_url = ET.SubElement(conference, 'base_url')
@@ -79,23 +79,23 @@ base_url.text = '/'.join(url.split('/')[:-1])
 time_zone_name = ET.SubElement(conference, 'time_zone_name')
 time_zone_name.text = "Europe/London"  # FIXME how to extract it? we've got the city, maybe there's a tool for that
 
-tracks = ET.SubElement(schedule, 'tracks')
+tracks_xml = ET.SubElement(schedule, 'tracks')
 for t in tracks:
-    t_xml = ET.SubElement(tracks, 'track')
+    t_xml = ET.SubElement(tracks_xml, 'track')
     t_xml.set('online_qa', 'true')
     t_xml.text = t
 for day, day_prop in enumerate(dates, start=1):
     day_xml = ET.SubElement(schedule, 'day')
     day_xml.set('index', f"{day}")
     day_xml.set('date', day_prop["date"])
-    day_xml.set('start', day_prop["start"])
-    day_xml.set('end', day_prop["end"])
+    day_xml.set('start', f"{day_prop['start'].isoformat()}")
+    day_xml.set('end', f"{day_prop['end'].isoformat()}")
     for room in rooms:
         room_xml =  ET.SubElement(day_xml, 'room')
         room_xml.set('name', room)
         room_xml.set("slug", name2slug(room))
-        for event in filter(lambda x: room in x.location and
-                            day_prop["start"] < x.begin < day_prop["end"],
+        for event in filter(lambda x: x.location.startswith(room) and
+                            day_prop["start"] <= x.begin <= day_prop["end"],
                             events):
             # if room in event.location and day_prop["start"] < event.begin < day_prop["end"]:
             speakers = get_speakers(event.url)
@@ -103,13 +103,13 @@ for day, day_prop in enumerate(dates, start=1):
             event_xml = ET.SubElement(room_xml, 'event')
             event_xml.set('guid', event.uid)
             date_xml = ET.SubElement(event_xml, 'date')
-            date_xml.text = event.begin
+            date_xml.text = f"{event.begin}"
             start_xml = ET.SubElement(event_xml, 'start')
             start_xml.text = event.begin.strftime("%H:%M")
             duration_xml = ET.SubElement(event_xml, 'duration')
-            duration_xml = seconds_to_hourformat(event.duration.total_seconds())
-            room_xml = ET.SubElement(event_xml, 'room')
-            room_xml.text = room
+            duration_xml.text = seconds_to_hourformat(event.duration.total_seconds())
+            room_ev_xml = ET.SubElement(event_xml, 'room')
+            room_ev_xml.text = room
             slug_xml = ET.SubElement(event_xml, 'slug')
             slug_xml.text = name2slug(event.name)
             url_xml = ET.SubElement(event_xml, 'url')
@@ -117,6 +117,7 @@ for day, day_prop in enumerate(dates, start=1):
             title_xml = ET.SubElement(event_xml, 'title')
             title_xml.text = event.name
             subtitle_xml = ET.SubElement(event_xml, 'subtitle')
+            subtitle_xml.text = ""
             track_xml = ET.SubElement(event_xml, 'track')
             track_xml.text = list(event.categories)[0]
             type_xml = ET.SubElement(event_xml, 'type')
@@ -124,9 +125,9 @@ for day, day_prop in enumerate(dates, start=1):
             language_xml = ET.SubElement(event_xml, 'language')
             language_xml.text = 'en'
             abstract_xml = ET.SubElement(event_xml, 'abstract')
-            abstract_xml.text = event.description
+            abstract_xml.text = " " + event.description
             description_xml = ET.SubElement(event_xml, 'description')
-            description_xml.text = "".join(speakers.values())
+            description_xml.text = " " + "".join(speakers.values())
             feedback_xml = ET.SubElement(event_xml, 'feedback')
             feedback_xml.text = event.url
             persons_xml = ET.SubElement(event_xml, 'persons')
@@ -134,7 +135,7 @@ for day, day_prop in enumerate(dates, start=1):
             links_xml = ET.SubElement(event_xml, 'links')
             for speaker in speakers:
                 person_xml = ET.SubElement(persons_xml, 'person')
-                person_xml.set('id', speaker_id)
+                person_xml.set('id', f"{speaker_id}")
                 person_xml.text = speaker
                 speaker_id += 1
             link_xml = ET.SubElement(links_xml, 'link')
@@ -143,9 +144,8 @@ for day, day_prop in enumerate(dates, start=1):
             # elements.remove(element)  # This is bad, but how could I do it to don't iterate on all?
 
 
-breakpoint()
 ET.indent(schedule)
-with open("soocon24.xml", "wb") as f:
+with open("soocon24.xml", "w") as f:
     f.write(ET.tostring(schedule, encoding="unicode"))
 
 
