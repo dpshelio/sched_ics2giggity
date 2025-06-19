@@ -1,0 +1,24 @@
+{
+	"version": 2023081901,
+	"url": "https://david.ps/sched_ics2giggity/soocon24.xml",
+	"title": "Sooocoooon 24",
+	"start": "2024-02-06",
+	"end": "2024-02-07",
+	"timezone": "Europe/London",
+	"metadata": {
+		"links": [
+			{
+				"url": "https://all-systems-go.io/",
+				"title": "Website"
+			},
+			{
+				"url": "https://all-systems-go.io/code-of-conduct/",
+				"title": "Code of conduct"
+			},
+			{
+				"url": "https://ti.to/all-systems-go/all-systems-go-2023",
+				"title": "Tickets"
+			}
+		]
+	}
+}
