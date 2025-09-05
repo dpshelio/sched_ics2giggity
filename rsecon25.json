@@ -1,0 +1,20 @@
+{
+	"version": 2025090501,
+	"url": "https://david.ps/sched_ics2giggity/rsecon25.xml",
+	"title": "RSECon25",
+	"start": "2025-09-08",
+	"end": "2025-09-12",
+	"timezone": "Europe/London",
+	"metadata": {
+		"links": [
+			{
+				"url": "https://rsecon25.society-rse.org/",
+				"title": "Website"
+			},
+			{
+				"url": "https://rsecon25.society-rse.org/conference-policies/code-of-conduct/",
+				"title": "Code of conduct"
+			}
+		]
+	}
+}
